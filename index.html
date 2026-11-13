@@ -13,7 +13,9 @@
     email=JSON.parse(localStorage.getItem('mb_session')||'null');
     all=JSON.parse(localStorage.getItem('mb_users')||'{}');
   }catch(e){}
-  if(!email||!all[email])location.replace('login.html');
+  if(!email||!all[email]){location.replace('login.html');return}
+  var u=all[email],n=Date.now();
+  if(u.role!=='admin'&&!(u.subUntil>n)&&!((u.created||0)+90*864e5>n))location.replace('login.html#pay');
 })();
 </script>
 <title>MizanBiz</title>
@@ -156,7 +158,7 @@ th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu
   <header class="top">
     <button class="icon-btn" data-act="pageBack" aria-label="Back" title="Back">←</button>
     <div class="brand">
-      <div class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 21h14M12 6 4 8l-2 7a4 4 0 0 0 8 0L8 8M12 6l8 2 2 7a4 4 0 0 1-8 0l2-7"/></svg></div>
+      <div class="logo" aria-hidden="true" style="background:none;width:46px;height:46px"><img src="icons/logo.png" alt="MizanBiz" style="width:100%;height:100%;object-fit:contain"></div>
       <div><h1>MizanBiz</h1><small id="tagline">Your business. In balance.</small></div>
     </div>
     <div class="top-actions">
@@ -164,6 +166,7 @@ th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu
       <button class="icon-btn" id="langBtn" data-act="lang" aria-label="Language">አማ</button>
       <button class="icon-btn" data-act="pageNext" aria-label="Next" title="Next">→</button>
       <button class="icon-btn profile-top" data-act="openProfile" aria-label="My Profile" title="My Profile" id="topProfile">👤</button>
+      <button class="icon-btn" data-act="logout" aria-label="Log out" title="Log out">↪</button>
       <button class="icon-btn" data-act="settings" aria-label="Settings"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button>
     </div>
   </header>
@@ -183,7 +186,10 @@ var AM={'Home':'ዋና','Sales':'ሽያጭ','Stock':'ክምችት','People':'ሰ
 'Price':'ዋጋ','Quantity':'ብዛት','Total':'ጠቅላላ','Customer':'ደንበኛ','Sold by':'የሸጠው','Date':'ቀን','Amount':'መጠን','Description':'መግለጫ','Cost price':'የግዢ ዋጋ','Selling price':'የመሸጫ ዋጋ','Product':'ምርት','Employee':'ሠራተኛ','Money':'ገንዘብ','Goods':'ዕቃ','Borrowed':'ወሰደ','Repaid':'መለሰ','Check in':'መግቢያ','Check out':'መውጫ','In':'ገባ','Out':'ወጣ',
 'Top customers':'ምርጥ ደንበኞች','Points':'ነጥብ','Give reward':'ሽልማት ስጥ','Record payment':'ክፍያ መዝግብ','Add customer':'ደንበኛ ጨምር','Add employee':'ሠራተኛ ጨምር','Record advance':'ብድር መዝግብ','Add expense':'ወጪ ጨምር','Add product':'ምርት ጨምር','Outstanding':'ቀሪ ዕዳ','Today':'ዛሬ','Last 7 days':'ያለፉት 7 ቀናት','Last 30 days':'ያለፉት 30 ቀናት','Gross profit':'ትርፍ','Search':'ፈልግ','Tap again to delete':'ለመሰረዝ እንደገና ይንኩ','Delete':'ሰርዝ',
 'Needs attention':'ትኩረት የሚሹ','Today\'s attendance':'የዛሬ መገኘት','Credit given by employees':'ሠራተኞች የሰጡት ዱቤ','Attendance this month':'የዚህ ወር መገኘት','Outstanding employee advances':'ያልተመለሱ የሠራተኛ ብድሮች','Sales summary':'የሽያጭ ማጠቃለያ','Settings':'ቅንብሮች','Expenses today':'የዛሬ ወጪ','Cloud backup':'የደመና ቅጂ','Back up now':'አሁን ቅጂ አስቀምጥ','Appearance':'መልክ','Light':'ብሩህ','Dark':'ጨለማ','Device':'እንደ መሣሪያው'};
-var lang='en';
+var lang=(function(){try{return localStorage.getItem('mb_lang')==='am'?'am':'en'}catch(e){return 'en'}})();
+Object.assign(AM,{'My Profile':'የእኔ መገለጫ','Your account information':'የመለያዎ መረጃ','Registered':'የተመዘገቡት','Role':'ሚና','Saved msg':'x',
+'Your profile photo and account details are saved in this browser.':'የመገለጫ ፎቶና የመለያ ዝርዝሮችዎ በዚህ አሳሽ ውስጥ ተቀምጠዋል።',
+'Back to Dashboard':'ወደ ዳሽቦርድ ተመለስ','Logout':'ውጣ','Account & Subscription':'መለያና ደንበኝነት','Profile unavailable':'መገለጫ አይገኝም','Please log in again.':'እባክዎ እንደገና ይግቡ።'});
 function t(s){return (lang==='am'&&AM[s])||s}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function uid(){return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3)}
@@ -453,16 +459,17 @@ function vProfile(){
   var initial=esc((user.name||'?').charAt(0).toUpperCase());
   var created=user.created?new Date(user.created).toLocaleDateString():'—';
 
-  return '<div class="top"><div><h2>My Profile</h2><span class="mute">Your account information</span></div></div>'+
+  return '<div class="top"><div><h2>'+esc(t('My Profile'))+'</h2><span class="mute">'+esc(t('Your account information'))+'</span></div></div>'+
     '<div class="card">'+
     '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem">'+
     '<div style="width:76px;height:76px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--accent);color:white;font-size:1.7rem;font-weight:800">'+
     (photo?'<img src="'+photo+'" alt="Profile photo" style="width:100%;height:100%;object-fit:cover">':initial)+
     '</div><div><b>'+esc(user.name||'User')+'</b><br><span class="mute">'+esc(user.email||email)+'</span></div></div>'+
-    '<p>Registered: <b>'+esc(created)+'</b><br>Role: <b>'+esc(user.role||'user')+'</b></p>'+
-    '<p class="mute">Your profile photo and account details are saved in this browser.</p>'+
-    '<button class="btn pri" data-act="tab" data-k="home">← Back to Dashboard</button>'+
-    ' <button class="btn danger" data-act="logout">Logout</button>'+
+    '<p>'+esc(t('Registered'))+': <b>'+esc(created)+'</b><br>'+esc(t('Role'))+': <b>'+esc(user.role||'user')+'</b></p>'+
+    '<p class="mute">'+esc(t('Your profile photo and account details are saved in this browser.'))+'</p>'+
+    '<button class="btn pri" data-act="tab" data-k="home">← '+esc(t('Back to Dashboard'))+'</button>'+
+    ' <button class="btn danger" data-act="logout">'+esc(t('Logout'))+'</button>'+
+    ' <button class="btn ghost" data-act="openAccount">Account &amp; Subscription</button>'+
     '</div>';
 }
 
@@ -593,7 +600,8 @@ function settingsSheet(){
    '<div class="card cloud"><div class="sec-h"><h2>This device</h2></div><div class="note">'+(memoryOnly?'This browser is not saving data. Changes will be lost when you close the page.':'Records are also saved in this browser.')+'</div>'+
    '<button class="btn ghost block" data-act="backup">Copy backup text</button>'+
    '<div class="field"><label for="restoreTxt">Restore from pasted backup text</label><textarea id="restoreTxt" rows="3" placeholder="Paste backup text here"></textarea></div><button class="btn ghost block" data-act="restore">Restore from text</button>'+
-   '<button class="btn danger block" data-act="freshEmpty">Start with an empty shop</button><button class="btn ghost block" data-act="freshSample">Load sample shop data</button></div>');
+   '<button class="btn danger block" data-act="freshEmpty">Start with an empty shop</button><button class="btn ghost block" data-act="freshSample">Load sample shop data</button></div>'+
+   '<button class="btn danger block" data-act="logout">Log out</button>');
 }
 
 /* ---- form submit ---- */
@@ -736,14 +744,22 @@ function cloudBanner(){
 function refreshCloudUI(){var b=$('cloudBox');if(b)b.innerHTML=cloudBoxInner();if(ui.tab==='home')render()}
 
 /* ---- events ---- */
+function stepPage(d){
+  var order=NAV.map(function(n){return n[0]});
+  var nx=pageHistoryIndex+d;
+  if(nx>=0&&nx<pageHistory.length){pageHistoryIndex=nx;ui.tab=pageHistory[nx];ui.q='';render();window.scrollTo(0,0);return}
+  if(d<0){location.href='login.html#profile';return}
+  var i=order.indexOf(ui.tab);navigateTab(order[(i+1)%order.length]);
+}
 var ACT={
-  pageBack:function(){movePageHistory(-1)},
-  pageNext:function(){movePageHistory(1)},
+  pageBack:function(){stepPage(-1)},
+  pageNext:function(){stepPage(1)},
   openProfile:function(){navigateTab('profile')},
+  openAccount:function(){location.href='login.html#pay'},
   tab:function(d){navigateTab(d.k)},
   sub:function(d){if(d.g==='period')ui.period=parseInt(d.k,10);else{ui.sub[d.g]=d.k;ui.q=''}render()},
   goPeople:function(d){ui.sub.people=d.k;navigateTab('people')},
-  lang:function(){lang=lang==='am'?'en':'am';render()},
+  lang:function(){lang=lang==='am'?'en':'am';try{localStorage.setItem('mb_lang',lang)}catch(e){}render()},
   logout:function(){
     localStorage.removeItem('mb_session');
     location.replace('login.html');
@@ -790,4 +806,5 @@ render();cloudInit();
 })();
 </script>
 
-<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js")})}</script></body></html>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js")})}</script><script src="chatbot.js"></script>
+</body></html>

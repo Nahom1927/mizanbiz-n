@@ -76,6 +76,9 @@ footer b{color:var(--text)}
 .side .logo,.side .hide-m{display:none}.nav{flex-direction:column;gap:.1rem;font-size:.7rem;padding:.4rem .5rem;text-align:center}
 .main{padding:1rem 1rem 6rem}}
 </style>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
 </head>
 <body>
 <div id="root"></div>
@@ -89,6 +92,7 @@ async function hash(p){try{const b=await crypto.subtle.digest('SHA-256',new Text
 const users=()=>ld('mb_users',{}),me=()=>users()[ld('mb_session',null)];
 const saveUser=u=>{const all=users();all[u.email]=u;sv('mb_users',all)};
 let view='dash',mode='login',msg='';
+/*HASHNAV*/if(['dash','tracker','pay','profile','admin'].includes(location.hash.slice(1)))view=location.hash.slice(1);
 const fmt=t=>new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 let usdPerEtb=0.0,fxUpdated=null;
 async function loadFx(){
@@ -121,7 +125,7 @@ function footer(){return `<footer><b>SASI DEVELOPERS</b> · Software Development
 
 function authView(){
  const reg=mode==='register',forgot=mode==='forgot';
- return `<div class="auth"><div class="hero grad"><div class="logo-w" style="font-weight:800;font-size:1.2rem">MizanBiz</div>
+ return `<div class="auth"><div class="hero grad"><img src="icons/logo.png" alt="MizanBiz" style="width:120px;height:120px;object-fit:contain">
  <h1>Run your business with clarity.</h1><p style="opacity:.9;max-width:440px">Track income and expenses, see your balance at a glance, and grow with confidence.</p>
  <div class="pill"><b>🎁 3 Months Free</b><br>Full access to MizanBiz for the first 90 days after registration.</div>
  <div style="margin-top:auto;font-size:.82rem;opacity:.85">SASI DEVELOPERS · Software Development Company<br>Developer: Nahom Zewge · CTO<br>Contact: <a href="tel:+251911898184" style="color:inherit;text-decoration:underline">+251911898184</a><br>© 2026 SASI DEVELOPERS. All Rights Reserved.</div></div>
@@ -260,9 +264,10 @@ function expireTrial(){const u=me();u.created=Date.now()-91*DAY;u.subUntil=0;sav
 function appView(u){
  const s=status(u),items=[['dash','🏠','Dashboard'],['tracker','💼','Transactions'],['pay','💳','Payment'],['profile','👤','Profile']];
  if(u.role==='admin')items.push(['admin','🛡️','Admin']);
- return `<div class="app"><nav class="side"><div class="logo">MizanBiz</div>
+ return `<button class="btn bad sm" style="position:fixed;top:calc(.6rem + env(safe-area-inset-top,0px));right:.8rem;z-index:30" onclick="logout()">Logout</button><div class="app"><nav class="side"><div class="logo" style="background:none"><img src="icons/logo.png" alt="MizanBiz" style="width:100%;max-width:150px;display:block"></div>
  ${items.map(([k,i,l])=>`<button class="nav ${view===k?'on':''}" onclick="go('${k}')"><span>${i}</span>${l}</button>`).join('')}
- <button class="nav hide-m" style="margin-top:auto" onclick="logout()"><span>🚪</span>Logout</button></nav>
+ <button class="nav" style="margin-top:auto" onclick="location.href='index.html'"><span>🛒</span>Shop</button>
+ <button class="nav hide-m" onclick="logout()"><span>🚪</span>Logout</button></nav>
  <div><div class="main">${pages[view](u,s)}</div>${footer()}</div></div>`}
 function render(){const u=me();$('#root').innerHTML=u?appView(u):authView()}
 render();
@@ -270,5 +275,7 @@ loadFx().then(()=>{if(me())render()});
 window.addEventListener('online',()=>loadFx().then(()=>{if(me())render()}));
 </script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js")})}</script>
+<script src="login-lang.js"></script>
+<script src="chatbot.js"></script>
 </body>
 </html>
