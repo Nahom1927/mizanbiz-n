@@ -487,7 +487,20 @@ var VIEWS={home:vHome,sales:vSales,stock:vStock,people:vPeople,reports:vReports,
 var NAV=[['home','Home','home'],['sales','Sales','cart'],['stock','Stock','box'],['people','People','users'],['reports','Reports','chart'],['profile','Profile','user']];
 function render(){
   document.getElementById('main').innerHTML=VIEWS[ui.tab]();
-  document.getElementById('nav').innerHTML=NAV.map(function(n){return '<button class="tab'+(ui.tab===n[0]?' on':'')+'" data-act="tab" data-k="'+n[0]+'">'+ic(n[2],22)+'<span>'+esc(t(n[1]))+'</span></button>'}).join('');
+  var profileEmail=null,profileUser=null;
+  try{
+    profileEmail=JSON.parse(localStorage.getItem('mb_session')||'null');
+    var profileUsers=JSON.parse(localStorage.getItem('mb_users')||'{}');
+    profileUser=profileEmail&&profileUsers[profileEmail]?profileUsers[profileEmail]:null;
+  }catch(e){}
+
+  document.getElementById('nav').innerHTML=NAV.map(function(n){
+    var icon=ic(n[2],22);
+    if(n[0]==='profile' && profileUser && typeof profileUser.photo==='string' && profileUser.photo.indexOf('data:image/')===0){
+      icon='<img src="'+profileUser.photo+'" alt="Profile" style="width:26px;height:26px;border-radius:50%;object-fit:cover;display:block;margin:0 auto">';
+    }
+    return '<button class="tab'+(ui.tab===n[0]?' on':'')+'" data-act="tab" data-k="'+n[0]+'">'+icon+'<span>'+esc(t(n[1]))+'</span></button>';
+  }).join('');
   var tb=document.getElementById('themeBtn');if(tb)tb.innerHTML=ic(effTheme()==='dark'?'sun':'moon',20);
   document.getElementById('langBtn').textContent=lang==='am'?'EN':'አማ';
   var topProfile=document.getElementById('topProfile');
