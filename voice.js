@@ -65,22 +65,22 @@ function txt(n){
 
 /* ---------- toast ---------- */
 var toastEl=null,toastT=null;
-function say(msg){
+function say(msg,quiet){
  if(!toastEl){toastEl=document.createElement('div');toastEl.id='mbvToast';document.body.appendChild(toastEl)}
  toastEl.textContent=msg;toastEl.className='show';
  clearTimeout(toastT);toastT=setTimeout(function(){toastEl.className=''},2600);
- if(blind())speak(msg,true);
+ if(blind()&&!quiet)speak(msg,true);
 }
 
 /* ---------- speech in ---------- */
-var active=null;
+var active=null,forceLang=null;
 function listen(opts){
  if(!SR){say(T('nosr'));return}
  if(active){try{active.stop()}catch(e){}active=null}
- var r=new SR(),got=false;
- r.lang=locale();r.interimResults=false;r.maxAlternatives=1;r.continuous=false;
+ stopSpeak();var r=new SR(),got=false;
+ r.lang=forceLang||locale();r.interimResults=false;r.maxAlternatives=1;r.continuous=false;
  active=r;
- r.onstart=function(){if(opts.onstart)opts.onstart();say(T('listening'))};
+ r.onstart=function(){if(opts.onstart)opts.onstart();say(T('listening'),true)};
  r.onresult=function(e){
   got=true;
   var t=e.results[0]&&e.results[0][0]?e.results[0][0].transcript:'';
@@ -88,9 +88,11 @@ function listen(opts){
  };
  r.onerror=function(e){
   var c=e&&e.error;
-  if(c==='not-allowed'||c==='service-not-allowed')say(T('blocked'));
-  else if(c==='network')say(T('net'));
-  else if(c==='no-speech')say(T('nothing'));
+  if(c==='not-allowed'||c==='service-not-allowed')say(T('blocked'),true);
+  else if(c==='network')say(T('net'),true);
+  else if(c==='no-speech')say(T('nothing'),true);
+  else if(c==='language-not-supported'&&!forceLang){forceLang='en-US';say('Amharic voice input is not available here. Using English.',true);setTimeout(function(){listen(opts)},400);}
+  else if(c&&c!=='aborted')say('Voice error: '+c,true);
  };
  r.onend=function(){active=null;if(opts.onend)opts.onend();if(!got&&opts.onsilent)opts.onsilent()};
  try{r.start()}catch(e){active=null}
