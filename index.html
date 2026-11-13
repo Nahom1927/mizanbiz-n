@@ -153,19 +153,28 @@ th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu
 .banner{display:flex;flex-direction:column;gap:10px;background:var(--accent-soft);color:var(--ink);border-radius:16px;padding:14px}
 @media (prefers-reduced-motion:reduce){.sheet{animation:none}#toast{transition:none}}
 @media (max-width:380px){.hero-stats{grid-template-columns:1fr 1fr}.hero .big{font-size:29px}}
+/* brand header */
+.top{flex-wrap:wrap;row-gap:8px;border-bottom:1px solid var(--line)}
+.top .brand{flex:1 1 auto;min-width:0;gap:12px}
+.brand-logo{width:48px;height:48px;border-radius:12px;object-fit:contain;flex:none}
+.brand-txt{min-width:0;line-height:1.1}
+.brand-txt h1{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--accent-text)}
+.brand-txt small{display:block;margin-top:4px;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.top .top-actions{gap:6px;flex:none}
+.top .icon-btn{min-width:38px;height:38px;padding:0 8px;border-radius:11px}
+@media (max-width:520px){.top .brand{flex:1 1 100%}.top .top-actions{width:100%;justify-content:space-between}}
 </style>
 <div id="app">
   <header class="top">
-    <button class="icon-btn" data-act="pageBack" aria-label="Back" title="Back">←</button>
     <div class="brand">
-      <div class="logo" aria-hidden="true" style="background:none;width:46px;height:46px"><img src="icons/logo.png" alt="MizanBiz" style="width:100%;height:100%;object-fit:contain"></div>
-      <div><h1>MizanBiz</h1><small id="tagline">Your business. In balance.</small></div>
+      <img class="brand-logo" src="icons/logo.png" alt="MizanBiz logo">
+      <div class="brand-txt"><h1>MizanBiz</h1><small id="tagline">Your business. In balance.</small></div>
     </div>
     <div class="top-actions">
+      <button class="icon-btn" data-act="pageBack" aria-label="Back" title="Back">←</button>
+      <button class="icon-btn" data-act="pageNext" aria-label="Next" title="Next">→</button>
       <button class="icon-btn" id="themeBtn" data-act="themeToggle" aria-label="Switch light or dark mode"></button>
       <button class="icon-btn" id="langBtn" data-act="lang" aria-label="Language">አማ</button>
-      <button class="icon-btn" data-act="pageNext" aria-label="Next" title="Next">→</button>
-      <button class="icon-btn profile-top" data-act="openProfile" aria-label="My Profile" title="My Profile" id="topProfile">👤</button>
       <button class="icon-btn" data-act="logout" aria-label="Log out" title="Log out">↪</button>
       <button class="icon-btn" data-act="settings" aria-label="Settings"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button>
     </div>
@@ -807,4 +816,5 @@ render();cloudInit();
 </script>
 
 <script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js")})}</script><script src="chatbot.js"></script>
+<script src="voice.js"></script>
 </body></html>
