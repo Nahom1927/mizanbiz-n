@@ -307,7 +307,7 @@ function avatar(n){return '<div class="avatar">'+esc(initials(n))+'</div>'}
 function empty(msg){return '<div class="empty">'+esc(msg)+'</div>'}
 function seg(group,items,cur){return '<div class="scroller" role="tablist">'+items.map(function(i){return '<button class="seg'+(cur===i[0]?' on':'')+'" data-act="sub" data-g="'+group+'" data-k="'+i[0]+'">'+esc(t(i[1]))+'</button>'}).join('')+'</div>'}
 function secH(title,right){return '<div class="sec-h"><h2>'+esc(t(title))+'</h2>'+(right||'')+'</div>'}
-var ui={tab:'home',sub:{sales:'sales',people:'customers'},q:'',attDate:today(),period:7};
+var ui={tab:'profile',sub:{sales:'sales',people:'customers'},q:'',attDate:today(),period:7};
 
 var pageHistory=['home'];
 var pageHistoryIndex=0;

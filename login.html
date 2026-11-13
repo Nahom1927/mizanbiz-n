@@ -225,9 +225,18 @@ profile(u,s){
  </div>
  <div><b>${esc(u.name)}</b><br><span class="mute">${u.loginType==='phone'?'Phone login':'Email login'}: ${esc(u.email)}</span></div>
  </div>
- <label for="profilePhoto">Profile picture</label>
- <input id="profilePhoto" type="file" accept="image/*" onchange="uploadProfilePhoto(this)">
- <p class="mute">Choose a photo from your device. Your picture is saved to this browser.</p>
+ <div style="margin:18px 0">
+   <div style="font-weight:600;margin-bottom:10px">Profile picture</div>
+   <label for="profilePhoto" class="btn pri" style="display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:12px 20px;border-radius:12px;cursor:pointer;font-weight:600;box-shadow:0 4px 12px rgba(10,133,117,.18)">
+     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+       <path d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4z"/>
+       <circle cx="12" cy="13" r="3"/>
+     </svg>
+     Change Profile Photo
+   </label>
+   <input id="profilePhoto" type="file" accept="image/*" onchange="uploadProfilePhoto(this)" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">
+   <p class="mute" style="margin-top:9px;font-size:13px">Choose a photo from your device. Your picture is saved to this browser.</p>
+ </div>
  <p>Registered: <b>${fmt(u.created)}</b><br>Plan: <span class="badge ${s.cls}">${s.label}</span> until <b>${fmt(s.until)}</b><br>Role: <b>${u.role}</b></p>
  <div style="display:flex;gap:.6rem;flex-wrap:wrap">
  <button class="btn pri" onclick="location.href='index.html'">Continue to Dashboard</button>
