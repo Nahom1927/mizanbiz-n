@@ -6,6 +6,16 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MizanBiz">
 </head><body>
+<script>
+(function(){
+  var email=null, all={};
+  try{
+    email=JSON.parse(localStorage.getItem('mb_session')||'null');
+    all=JSON.parse(localStorage.getItem('mb_users')||'{}');
+  }catch(e){}
+  if(!email||!all[email])location.replace('login.html');
+})();
+</script>
 <title>MizanBiz</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+Ethiopic:wght@400;600;700&display=swap">
@@ -144,6 +154,7 @@ th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu
 </style>
 <div id="app">
   <header class="top">
+    <button class="icon-btn" data-act="pageBack" aria-label="Back" title="Back">←</button>
     <div class="brand">
       <div class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 21h14M12 6 4 8l-2 7a4 4 0 0 0 8 0L8 8M12 6l8 2 2 7a4 4 0 0 1-8 0l2-7"/></svg></div>
       <div><h1>MizanBiz</h1><small id="tagline">Your business. In balance.</small></div>
@@ -151,6 +162,8 @@ th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu
     <div class="top-actions">
       <button class="icon-btn" id="themeBtn" data-act="themeToggle" aria-label="Switch light or dark mode"></button>
       <button class="icon-btn" id="langBtn" data-act="lang" aria-label="Language">አማ</button>
+      <button class="icon-btn" data-act="pageNext" aria-label="Next" title="Next">→</button>
+      <button class="icon-btn profile-top" data-act="openProfile" aria-label="My Profile" title="My Profile" id="topProfile">👤</button>
       <button class="icon-btn" data-act="settings" aria-label="Settings"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg></button>
     </div>
   </header>
@@ -280,6 +293,24 @@ function seg(group,items,cur){return '<div class="scroller" role="tablist">'+ite
 function secH(title,right){return '<div class="sec-h"><h2>'+esc(t(title))+'</h2>'+(right||'')+'</div>'}
 var ui={tab:'home',sub:{sales:'sales',people:'customers'},q:'',attDate:today(),period:7};
 
+var pageHistory=['home'];
+var pageHistoryIndex=0;
+function navigateTab(tab){
+  if(!VIEWS[tab])return;
+  pageHistory=pageHistory.slice(0,pageHistoryIndex+1);
+  if(pageHistory[pageHistoryIndex]!==tab){
+    pageHistory.push(tab);
+    pageHistoryIndex++;
+  }
+  ui.tab=tab;ui.q='';render();window.scrollTo(0,0);
+}
+function movePageHistory(step){
+  var next=pageHistoryIndex+step;
+  if(next<0||next>=pageHistory.length)return;
+  pageHistoryIndex=next;ui.tab=pageHistory[next];ui.q='';render();window.scrollTo(0,0);
+}
+
+
 /* ---- HOME ---- */
 function attRow(e,d,full){
   var r=S.attendance.find(function(a){return a.empId===e.id&&a.date===d});
@@ -408,13 +439,55 @@ function vReports(){
 }
 
 /* ---- render ---- */
-var VIEWS={home:vHome,sales:vSales,stock:vStock,people:vPeople,reports:vReports};
-var NAV=[['home','Home','home'],['sales','Sales','cart'],['stock','Stock','box'],['people','People','users'],['reports','Reports','chart']];
+
+function vProfile(){
+  var email=null, user=null;
+  try{
+    email=JSON.parse(localStorage.getItem('mb_session')||'null');
+    var all=JSON.parse(localStorage.getItem('mb_users')||'{}');
+    user=email&&all[email]?all[email]:null;
+  }catch(e){}
+  if(!user)return '<div class="card"><h2>Profile unavailable</h2><p class="mute">Please log in again.</p><button class="btn pri" data-act="logout">Login</button></div>';
+
+  var photo=typeof user.photo==='string'&&user.photo.indexOf('data:image/')===0?user.photo:'';
+  var initial=esc((user.name||'?').charAt(0).toUpperCase());
+  var created=user.created?new Date(user.created).toLocaleDateString():'—';
+
+  return '<div class="top"><div><h2>My Profile</h2><span class="mute">Your account information</span></div></div>'+
+    '<div class="card">'+
+    '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem">'+
+    '<div style="width:76px;height:76px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--accent);color:white;font-size:1.7rem;font-weight:800">'+
+    (photo?'<img src="'+photo+'" alt="Profile photo" style="width:100%;height:100%;object-fit:cover">':initial)+
+    '</div><div><b>'+esc(user.name||'User')+'</b><br><span class="mute">'+esc(user.email||email)+'</span></div></div>'+
+    '<p>Registered: <b>'+esc(created)+'</b><br>Role: <b>'+esc(user.role||'user')+'</b></p>'+
+    '<p class="mute">Your profile photo and account details are saved in this browser.</p>'+
+    '<button class="btn pri" data-act="tab" data-k="home">← Back to Dashboard</button>'+
+    ' <button class="btn danger" data-act="logout">Logout</button>'+
+    '</div>';
+}
+
+var VIEWS={home:vHome,sales:vSales,stock:vStock,people:vPeople,reports:vReports,profile:vProfile};
+var NAV=[['home','Home','home'],['sales','Sales','cart'],['stock','Stock','box'],['people','People','users'],['reports','Reports','chart'],['profile','Profile','user']];
 function render(){
   document.getElementById('main').innerHTML=VIEWS[ui.tab]();
   document.getElementById('nav').innerHTML=NAV.map(function(n){return '<button class="tab'+(ui.tab===n[0]?' on':'')+'" data-act="tab" data-k="'+n[0]+'">'+ic(n[2],22)+'<span>'+esc(t(n[1]))+'</span></button>'}).join('');
   var tb=document.getElementById('themeBtn');if(tb)tb.innerHTML=ic(effTheme()==='dark'?'sun':'moon',20);
   document.getElementById('langBtn').textContent=lang==='am'?'EN':'አማ';
+  var topProfile=document.getElementById('topProfile');
+  if(topProfile){
+    var email=null,user=null;
+    try{
+      email=JSON.parse(localStorage.getItem('mb_session')||'null');
+      var all=JSON.parse(localStorage.getItem('mb_users')||'{}');
+      user=email&&all[email]?all[email]:null;
+    }catch(e){}
+    if(user&&typeof user.photo==='string'&&user.photo.indexOf('data:image/')===0){
+      topProfile.innerHTML='<img src="'+user.photo+'" alt="My Profile" style="width:34px;height:34px;border-radius:50%;object-fit:cover">';
+    }else{
+      topProfile.textContent=user?(user.name||'?').charAt(0).toUpperCase():'👤';
+    }
+  }
+
   document.documentElement.lang=lang==='am'?'am':'en';
 }
 function toast(m){var el=document.getElementById('toast');el.textContent=m;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(function(){el.classList.remove('show')},2400)}
@@ -664,10 +737,17 @@ function refreshCloudUI(){var b=$('cloudBox');if(b)b.innerHTML=cloudBoxInner();i
 
 /* ---- events ---- */
 var ACT={
-  tab:function(d){ui.tab=d.k;ui.q='';render();window.scrollTo(0,0)},
+  pageBack:function(){movePageHistory(-1)},
+  pageNext:function(){movePageHistory(1)},
+  openProfile:function(){navigateTab('profile')},
+  tab:function(d){navigateTab(d.k)},
   sub:function(d){if(d.g==='period')ui.period=parseInt(d.k,10);else{ui.sub[d.g]=d.k;ui.q=''}render()},
-  goPeople:function(d){ui.tab='people';ui.sub.people=d.k;render();window.scrollTo(0,0)},
+  goPeople:function(d){ui.sub.people=d.k;navigateTab('people')},
   lang:function(){lang=lang==='am'?'en':'am';render()},
+  logout:function(){
+    localStorage.removeItem('mb_session');
+    location.replace('login.html');
+  },
   settings:settingsSheet, closeSheet:closeSheet,
   newSale:saleSheet, addLine:addLine, rmLine:function(d){cart.splice(+d.i,1);renderCart()},
   addProduct:function(){productSheet()}, editProduct:function(d){productSheet(d.id)},
