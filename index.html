@@ -472,7 +472,7 @@ function vProfile(){
     '<div class="card">'+
     '<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem">'+
     '<div style="width:76px;height:76px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--accent);color:white;font-size:1.7rem;font-weight:800">'+
-    (photo?'<img src="'+photo+'" alt="Profile photo" style="width:100%;height:100%;object-fit:cover">':initial)+
+    (photo?'<img src="'+photo+'" alt="Profile photo" style="width:100%;height:100%;border-radius:50%;object-fit:cover">':initial)+
     '</div><div><b>'+esc(user.name||'User')+'</b><br><span class="mute">'+esc(user.email||email)+'</span></div></div>'+
     '<p>'+esc(t('Registered'))+': <b>'+esc(created)+'</b><br>'+esc(t('Role'))+': <b>'+esc(user.role||'user')+'</b></p>'+
     '<p class="mute">'+esc(t('Your profile photo and account details are saved in this browser.'))+'</p>'+
