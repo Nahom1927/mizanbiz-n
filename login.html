@@ -269,5 +269,6 @@ render();
 loadFx().then(()=>{if(me())render()});
 window.addEventListener('online',()=>loadFx().then(()=>{if(me())render()}));
 </script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js")})}</script>
 </body>
 </html>
